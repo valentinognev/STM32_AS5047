@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include "spi.h"
 #include "gpio.h"
+#include "dma.h"
 
 uint8_t spiFinished = 1;
 
@@ -31,7 +32,7 @@ uint8_t AS5047D_ReadWrite(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint
 	address = address | AS5047D_RD; // it's a read command
 
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished = 0;
-	if (HAL_SPI_TransmitReceive_IT(&hspi3, (uint8_t*) &address, (uint8_t*) data, 1) != HAL_OK)
+	if (HAL_SPI_TransmitReceive_DMA(&hspi3, (uint8_t*) &address, (uint8_t*) data, 1) != HAL_OK)
 	{
 		Error_Handler();
 	}
@@ -52,7 +53,7 @@ uint8_t AS5047D_Write(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t
 
 	uint16_t resData1 = 0, resData2 = 0;
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished = 0;
-	if (HAL_SPI_TransmitReceive_IT(&hspi3, (uint8_t*) &address, (uint8_t*) &resData1, 1) != HAL_OK)
+	if (HAL_SPI_TransmitReceive_DMA(&hspi3, (uint8_t*) &address, (uint8_t*) &resData1, 1) != HAL_OK)
 	//if (HAL_SPI_Transmit(&hspi3, (uint8_t*) &address, 1, 100) != HAL_OK)
 	{
 		Error_Handler();
@@ -64,7 +65,7 @@ uint8_t AS5047D_Write(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t
 	//data = data & (WR | 0x8000); // its a write command and don't change the parity bit (0x8000)
 
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished=0;
-	if (HAL_SPI_TransmitReceive_IT(&hspi3, (uint8_t*) &data, (uint8_t*) &resData2, 1) != HAL_OK)
+	if (HAL_SPI_TransmitReceive_DMA(&hspi3, (uint8_t*) &data, (uint8_t*) &resData2, 1) != HAL_OK)
 //	if (HAL_SPI_Transmit(&hspi3, (uint8_t*) &data, 1, 100) != HAL_OK)
 	{
 		Error_Handler();
@@ -89,7 +90,7 @@ uint8_t AS5047D_Read(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t 
 
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished = 0;
 	uint16_t resData = 0;
-	if (HAL_SPI_TransmitReceive_IT(&hspi3, (uint8_t*) &address, (uint8_t*) &resData, 1) != HAL_OK)
+	if (HAL_SPI_TransmitReceive_DMA(&hspi3, (uint8_t*) &address, (uint8_t*) &resData, 1) != HAL_OK)
 	{
 		Error_Handler();
 	}
@@ -97,7 +98,7 @@ uint8_t AS5047D_Read(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t 
 
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished = 0;
 
-	if (HAL_SPI_Receive_IT(&hspi3, (uint8_t*) data, 1) != HAL_OK)
+	if (HAL_SPI_Receive_DMA(&hspi3, (uint8_t*) data, 1) != HAL_OK)
 	{
 		Error_Handler();
 	}

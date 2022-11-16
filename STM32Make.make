@@ -38,6 +38,7 @@ BUILD_DIR = build
 C_SOURCES =  \
 Core/Src/AS5047D.c \
 Core/Src/debug_scope.c \
+Core/Src/dma.c \
 Core/Src/gpio.c \
 Core/Src/main.c \
 Core/Src/spi.c \
