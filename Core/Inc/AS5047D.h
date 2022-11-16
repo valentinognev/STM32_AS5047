@@ -31,22 +31,21 @@
 #define AS5047D_RD 0x4000    // bit 14 = "1" is Read + parity even
 #define AS5047D_WR 0x3FFF    // bit 14 = "0" is Write
 
-void AS5047D_Init(void);
+uint8_t AS5047D_Init(void);
 
-uint16_t AS5047D_Write(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t address, uint16_t data);
-uint16_t AS5047D_Read(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t address);
-uint16_t AS5047D_ReadWrite(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t address);
+uint8_t AS5047D_Write(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t address, uint16_t data);
+uint8_t AS5047D_Read(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t address, uint16_t *data);
+uint8_t AS5047D_ReadWrite(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t address, uint16_t *data);
 
-void AS5047D_Check_Transmission_Error(void);
-void AS5047D_SetZero(void);
-uint16_t AS5047D_GetZero(void);
-uint8_t AS5047D_Get_AGC_Value(void);
+uint8_t AS5047D_SetZero(void);
+uint8_t AS5047D_GetZero(uint16_t* zeroPos);
+uint8_t AS5047D_Get_AGC_Value(uint16_t* DIAAGC);
 
-uint16_t AS5047D_Get_CORDICMAG_Value(void);
-uint16_t AS5047D_Get_ANGLEUNC_Value(void);
-uint16_t AS5047D_Get_ANGLECOM_Value(void);
+uint8_t AS5047D_Get_CORDICMAG_Value(uint16_t* CORDICMAG);
+uint8_t AS5047D_Get_ANGLEUNC_Value(uint16_t* ANGLEUNC);
+uint8_t AS5047D_Get_ANGLECOM_Value(uint16_t* ANGLECOM);
 
-float AS5047D_Get_True_Angle_Value(void);
+uint8_t AS5047D_Get_True_Angle_Value(float* angle);
 
 #define AS5047D_Check_MAG_TooLow(DIAAGC)      ((DIAAGC >> 11) & 0x0001)
 #define AS5047D_Check_MAG_TooHigh(DIAAGC)     ((DIAAGC >> 10) & 0x0001)

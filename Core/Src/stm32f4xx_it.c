@@ -43,7 +43,8 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 extern int32_t encoderAngle;
-extern int32_t spiAngle;
+extern float spiAngle;
+static uint16_t ERRFL;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -214,7 +215,12 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 	  LL_TIM_ClearFlag_UPDATE(TIM9);
 
 	  encoderAngle = LL_TIM_GetCounter(TIM4);
-	  //spiAngle = AS5047D_Get_True_Angle_Value();
+//	  uint8_t errorFlag = AS5047D_Get_True_Angle_Value(&spiAngle);
+//	  if (errorFlag != 0)
+//	  {
+//		  errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
+//		  errorFlag++;
+//	  }
 	}
   }
   /* USER CODE END TIM1_BRK_TIM9_IRQn 0 */
