@@ -10,8 +10,10 @@
 #include "spi.h"
 #include "gpio.h"
 #include "dma.h"
+#include "stm32f4xx_it.h"
 
-uint8_t spiFinished = 1;
+extern uint8_t spiTxFinished;
+extern uint8_t spiRxFinished;
 
 uint16_t parity(uint16_t x)
 {
@@ -31,13 +33,11 @@ uint8_t AS5047D_ReadWrite(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint
 	if (parity(address | AS5047D_RD) == 1) address = address | 0x8000; // set parity bit
 	address = address | AS5047D_RD; // it's a read command
 
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished = 0;
-	if (HAL_SPI_TransmitReceive_DMA(&hspi3, (uint8_t*) &address, (uint8_t*) data, 1) != HAL_OK)
-	{
-		Error_Handler();
-	}
+
+	SPI_TransmitReceive_DMA(&address, data, 1);
+	while (!spiTxFinished || !spiRxFinished);
+
 	uint8_t parityErr = 0, EFerr = 0;
-	while (!spiFinished);
 	if ((*data & 0x8000) >> 15 != parity(*data & 0x7FFF))
 		parityErr = 1;
 	if ((*data & 0x4000) != 0)
@@ -52,25 +52,15 @@ uint8_t AS5047D_Write(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t
 	//address = address & (WR | 0x8000);  // its  a write command and don't change the parity bit (0x8000)
 
 	uint16_t resData1 = 0, resData2 = 0;
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished = 0;
-	if (HAL_SPI_TransmitReceive_DMA(&hspi3, (uint8_t*) &address, (uint8_t*) &resData1, 1) != HAL_OK)
-	//if (HAL_SPI_Transmit(&hspi3, (uint8_t*) &address, 1, 100) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	while (!spiFinished);
+	SPI_TransmitReceive_DMA(&address, &resData1, 1);
+	while (!spiTxFinished || !spiRxFinished);
 	//HAL_Delay(1);
 
 	if (parity(data & AS5047D_WR) == 1) data = data | 0x8000; // set parity bit
 	//data = data & (WR | 0x8000); // its a write command and don't change the parity bit (0x8000)
 
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished=0;
-	if (HAL_SPI_TransmitReceive_DMA(&hspi3, (uint8_t*) &data, (uint8_t*) &resData2, 1) != HAL_OK)
-//	if (HAL_SPI_Transmit(&hspi3, (uint8_t*) &data, 1, 100) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	while (!spiFinished);
+	SPI_TransmitReceive_DMA(&data, &resData2, 1);
+	while (!spiTxFinished || !spiRxFinished);
 
 	uint8_t parityErr = 0, EFerr = 0, dataErr = 0;
 	if ((resData2 & 0x8000) >> 15 != parity(resData2 & 0x7FFF))
@@ -88,21 +78,13 @@ uint8_t AS5047D_Read(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t 
 	if (parity(address | AS5047D_RD) == 1) address = address | 0x8000; // set parity bit
 	address = address | AS5047D_RD; // it's a read command
 
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished = 0;
 	uint16_t resData = 0;
-	if (HAL_SPI_TransmitReceive_DMA(&hspi3, (uint8_t*) &address, (uint8_t*) &resData, 1) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	while (!spiFinished);
+	SPI_TransmitReceive_DMA(&address, &resData, 1);
+	while (!spiTxFinished || !spiRxFinished);
 
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_GPIO_Pin, GPIO_PIN_RESET);spiFinished = 0;
-
-	if (HAL_SPI_Receive_DMA(&hspi3, (uint8_t*) data, 1) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	while (!spiFinished);
+	uint16_t nop = 0;
+	SPI_TransmitReceive_DMA(&nop, data, 1);
+	while (!spiTxFinished || !spiRxFinished);
 	uint8_t parityErr = 0, EFerr = 0;
 	if ((*data & 0x8000) >> 15 != parity(*data & 0x7FFF))
 		parityErr = 1;
@@ -113,24 +95,6 @@ uint8_t AS5047D_Read(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t 
 	return parityErr|EFerr;
 }
 
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
-{
-    // TX Done .. Do Something ...
-	HAL_GPIO_WritePin(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, GPIO_PIN_SET);
-	spiFinished = 1;
-}
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef * hspi)
-{
-    // RX Done .. Do Something ...
-	HAL_GPIO_WritePin(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, GPIO_PIN_SET);
-	spiFinished = 1;
-}
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi)
-{
-    // TX-RX Done .. Do Something ...
-	HAL_GPIO_WritePin(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, GPIO_PIN_SET);
-	spiFinished = 1;
-}
 
 
 uint8_t AS5047D_SetZero(void)

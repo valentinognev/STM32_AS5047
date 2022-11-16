@@ -29,6 +29,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
+#include "stm32f4xx_ll_spi.h"
 #include "stm32f4xx_ll_tim.h"
 #include "stm32f4xx_ll_bus.h"
 #include "stm32f4xx_ll_cortex.h"
@@ -112,10 +113,14 @@ void Error_Handler(void);
 #define SWCLK_GPIO_Port GPIOA
 #define AS5047D_CS1_Pin GPIO_PIN_0
 #define AS5047D_CS1_GPIO_Port GPIOD
+#define START_WRITE_Pin GPIO_PIN_1
+#define START_WRITE_GPIO_Port GPIOD
+#define START_WRITE_EXTI_IRQn EXTI1_IRQn
+#define GET_DBG_DATA_Pin GPIO_PIN_2
+#define GET_DBG_DATA_GPIO_Port GPIOD
+#define GET_DBG_DATA_EXTI_IRQn EXTI2_IRQn
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
-#define MEMS_INT2_Pin GPIO_PIN_1
-#define MEMS_INT2_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

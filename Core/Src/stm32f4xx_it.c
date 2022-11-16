@@ -42,9 +42,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
+extern uint8_t timTrig;
 extern int32_t encoderAngle;
-extern float spiAngle;
-static uint16_t ERRFL;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,8 +57,7 @@ static uint16_t ERRFL;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_spi3_rx;
-extern DMA_HandleTypeDef hdma_spi3_tx;
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern SPI_HandleTypeDef hspi1;
 /* USER CODE BEGIN EV */
 
@@ -204,14 +202,49 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles EXTI line1 interrupt.
+  */
+void EXTI1_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI1_IRQn 0 */
+
+  /* USER CODE END EXTI1_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(START_WRITE_Pin);
+  /* USER CODE BEGIN EXTI1_IRQn 1 */
+
+  /* USER CODE END EXTI1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI line2 interrupt.
+  */
+void EXTI2_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI2_IRQn 0 */
+
+  /* USER CODE END EXTI2_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GET_DBG_DATA_Pin);
+  /* USER CODE BEGIN EXTI2_IRQn 1 */
+
+  /* USER CODE END EXTI2_IRQn 1 */
+}
+
+/**
   * @brief This function handles DMA1 stream0 global interrupt.
   */
 void DMA1_Stream0_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream0_IRQn 0 */
-
+	  if(LL_DMA_IsActiveFlag_TC0(DMA1) == 1)
+	  {
+		  DMA1_Stream0_TransferComplete();
+	  }
+	  else if(LL_DMA_IsActiveFlag_TE0(DMA1) == 1)
+	  {
+	    LL_DMA_ClearFlag_TE0(DMA1);
+	  }
   /* USER CODE END DMA1_Stream0_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_spi3_rx);
+
   /* USER CODE BEGIN DMA1_Stream0_IRQn 1 */
 
   /* USER CODE END DMA1_Stream0_IRQn 1 */
@@ -223,9 +256,16 @@ void DMA1_Stream0_IRQHandler(void)
 void DMA1_Stream5_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream5_IRQn 0 */
-
+	  if(LL_DMA_IsActiveFlag_TC5(DMA1) == 1)
+	  {
+		  DMA1_Stream5_TransferComplete();
+	  }
+	  else if(LL_DMA_IsActiveFlag_TE5(DMA1) == 1)
+	  {
+	    LL_DMA_ClearFlag_TE5(DMA1);
+	  }
   /* USER CODE END DMA1_Stream5_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_spi3_tx);
+
   /* USER CODE BEGIN DMA1_Stream5_IRQn 1 */
 
   /* USER CODE END DMA1_Stream5_IRQn 1 */
@@ -242,14 +282,9 @@ void TIM1_BRK_TIM9_IRQHandler(void)
 	if (LL_TIM_IsActiveFlag_UPDATE (TIM9) != 0U)
 	{
 	  LL_TIM_ClearFlag_UPDATE(TIM9);
-
 	  encoderAngle = LL_TIM_GetCounter(TIM4);
-//	  uint8_t errorFlag = AS5047D_Get_True_Angle_Value(&spiAngle);
-//	  if (errorFlag != 0)
-//	  {
-//		  errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
-//		  errorFlag++;
-//	  }
+	  timTrig = 1;
+
 	}
   }
   /* USER CODE END TIM1_BRK_TIM9_IRQn 0 */
@@ -299,6 +334,20 @@ void EXTI15_10_IRQHandler(void)
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */
 
   /* USER CODE END EXTI15_10_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USB On The Go FS global interrupt.
+  */
+void OTG_FS_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_FS_IRQn 0 */
+
+  /* USER CODE END OTG_FS_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+  /* USER CODE BEGIN OTG_FS_IRQn 1 */
+
+  /* USER CODE END OTG_FS_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

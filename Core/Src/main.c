@@ -22,12 +22,14 @@
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
+#include "usb_device.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "AS5047D.h"
 #include "debug_scope.h"
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,7 +49,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+DebugCommand debugCommand = 0;
+volatile uint8_t timTrig = 0;
 DebugScope_Handle_t debugData =
 	{
         .sz = DEBUGSCOPESIZE,
@@ -125,6 +128,7 @@ int main(void)
   MX_SPI3_Init();
   MX_TIM4_Init();
   MX_USART2_UART_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
   LL_TIM_EnableCounter(TIM4);
@@ -156,15 +160,34 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  char buf[10]={"my test"};
+  char inData[10] = "";
+  uint32_t inDataSZ = strlen(inData);
   while (1)
   {
+	  while (!timTrig) ;
+
 	  errorFlag = AS5047D_Get_True_Angle_Value(&spiAngle);
 	  if (errorFlag != 0)
 	  {
 		  errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
 		  errorFlag++;
 	  }
-	  LL_mDelay(1);
+	  timTrig = 0;
+	  DebugScopeInsertData(&debugData, 1, encoderAngle);
+	  DebugScopeInsertData(&debugData, 2, spiAngle);
+
+	  //CDC_Transmit_FS(buf, strlen(buf));
+	  if (VCP_retrieveInputData(inData, &inDataSZ))
+		  if (strlen(inData)>0)
+		  {
+			  debugCommand = inData[0];//atoi(buf);
+			  if (debugCommand == START_WRITE)
+				  debugData.startWriteFlag = true;
+			  else if (debugCommand == TRANSMIT_DATA)
+				  CDC_Transmit_FS(debugData.Ch1, sizeof(debugData.Ch1)*2);
+		  }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -193,8 +216,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 256;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -207,38 +230,28 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
     Error_Handler();
   }
 }
 
 /* USER CODE BEGIN 4 */
-//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-//{
-//  if(htim->Instance==TIM9)
-//  {
-//    /* Register dump */
-//    ERRFL = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL);
-//    PROG = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_PROG);
-//    DIAAGC = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_DIAAGC);
-//    ANGLEUNC = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ANGLEUNC);
-//    NOP = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_NOP);
-//    CORDICMAG = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_CORDICMAG);
-//    ANGLECOM = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ANGLECOM);
-//    ZPOSM = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ZPOSM);
-//    ZPOSL = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ZPOSL);
-//    SETTINGS1 = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_SETTINGS1);
-//    SETTINGS2 = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_SETTINGS2);
-//
-//    true_angle = AS5047D_Get_True_Angle_Value();
-//    timerData = LL_TIM_GetCounter(TIM4);
-//  }
-//}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == START_WRITE_Pin)
+	{
+		debugData.startWriteFlag = true;
+	}
+	else if (GPIO_Pin == GET_DBG_DATA_Pin)
+	{
+		HAL_UART_Transmit (&huart2, debugData.Ch1, sizeof (debugData.Ch1)*2, 10);
+	}
+}
 /* USER CODE END 4 */
 
 /**

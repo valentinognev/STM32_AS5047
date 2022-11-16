@@ -64,6 +64,12 @@ typedef struct
 
 typedef enum
 {
+	IDLE = 0,
+	START_WRITE,
+	TRANSMIT_DATA
+} DebugCommand;
+typedef enum
+{
   NO_ERROR = 0,
   CHID_IS_OUT_OF_BOUNDS,
   NO_MORE_PLACE_TO_WRITE,
@@ -77,16 +83,16 @@ typedef struct
   const int16_t sz;
 	int8_t curCh;
 	int16_t i1, i2, i3, i4, i5;
-  int16_t Ch1[DEBUGSCOPESIZE];
-  int16_t Ch2[DEBUGSCOPESIZE];
-  int16_t Ch3[DEBUGSCOPESIZE];
-  int16_t Ch4[1];
-	int16_t Ch5[1];
+    float Ch1[DEBUGSCOPESIZE];
+    float Ch2[DEBUGSCOPESIZE];
+    float Ch3[DEBUGSCOPESIZE];
+    float Ch4[1];
+    float Ch5[1];
   uint8_t startWriteFlag;
 } DebugScope_Handle_t;
 
 int64_t getTickMSCounter();
-DebugWriteState DebugScopeInsertData(DebugScope_Handle_t *pHandle, const int8_t chid, const int16_t data);
+DebugWriteState DebugScopeInsertData(DebugScope_Handle_t *pHandle, const int8_t chid, const float data);
 void DebugScopeStartWrite(DebugScope_Handle_t *pHandle);
 
 #ifdef __cplusplus

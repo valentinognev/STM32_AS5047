@@ -31,7 +31,7 @@ extern "C" {
 /* DMA memory to memory transfer handles -------------------------------------*/
 
 /* USER CODE BEGIN Includes */
-
+#include "gpio.h"
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
@@ -41,7 +41,12 @@ extern "C" {
 void MX_DMA_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+void SPI_TransmitReceive_DMA(uint16_t* transferData, uint16_t* receiveData, uint16_t size);
+void SPI_Transfer_DMA(uint16_t* transferData, uint16_t size);
+void SPI_Receive_DMA(uint16_t* receiveData, uint16_t size);
 
+void DMA1_Stream0_TransferComplete(void);
+void DMA1_Stream5_TransferComplete(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
