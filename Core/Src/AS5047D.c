@@ -28,11 +28,11 @@ uint16_t parity(uint16_t x)
 	return (parity & 0x1);
 }
 
-uint8_t AS5047D_ReadWrite(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t address, uint16_t *data)
+uint8_t AS5047D_ReadWrite(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, const uint16_t address_, uint16_t *data)
 {
+	uint16_t address =address_;
 	if (parity(address | AS5047D_RD) == 1) address = address | 0x8000; // set parity bit
 	address = address | AS5047D_RD; // it's a read command
-
 
 	SPI_TransmitReceive_DMA(&address, data, 1);
 	while (!spiTxFinished || !spiRxFinished);
@@ -46,16 +46,18 @@ uint8_t AS5047D_ReadWrite(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint
 	return parityErr | EFerr;
 }
 
-uint8_t AS5047D_Write(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t address, uint16_t data)
+uint8_t AS5047D_Write(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, const uint16_t address_, const uint16_t data_)
 {
+	uint16_t address = address_;
 	if (parity(address & AS5047D_WR) == 1) address = address | 0x8000; // set parity bit
-	//address = address & (WR | 0x8000);  // its  a write command and don't change the parity bit (0x8000)
+	// address = address & (WR | 0x8000);  // its  a write command and don't change the parity bit (0x8000)
 
 	uint16_t resData1 = 0, resData2 = 0;
 	SPI_TransmitReceive_DMA(&address, &resData1, 1);
 	while (!spiTxFinished || !spiRxFinished);
 	//HAL_Delay(1);
 
+	uint16_t data = data_;
 	if (parity(data & AS5047D_WR) == 1) data = data | 0x8000; // set parity bit
 	//data = data & (WR | 0x8000); // its a write command and don't change the parity bit (0x8000)
 
@@ -73,25 +75,30 @@ uint8_t AS5047D_Write(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t
 	return parityErr | EFerr | dataErr;
 }
 
-uint8_t AS5047D_Read(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, uint16_t address, uint16_t *data)
+uint8_t AS5047D_Read(GPIO_TypeDef* CS_GPIO_Port, uint16_t CS_GPIO_Pin, const uint16_t address_, uint16_t *data_)
 {
-	if (parity(address | AS5047D_RD) == 1) address = address | 0x8000; // set parity bit
+	uint16_t address = address_;
 	address = address | AS5047D_RD; // it's a read command
+	if (parity(address) == 1) 
+		address = address | 0x8000; // set parity bit
 
 	uint16_t resData = 0;
 	SPI_TransmitReceive_DMA(&address, &resData, 1);
 	while (!spiTxFinished || !spiRxFinished);
 
+	//LL_mDelay(1);
+
 	uint16_t nop = 0;
-	SPI_TransmitReceive_DMA(&nop, data, 1);
+	uint16_t data = 0;
+	SPI_TransmitReceive_DMA(&nop, &data, 1);
 	while (!spiTxFinished || !spiRxFinished);
 	uint8_t parityErr = 0, EFerr = 0;
-	if ((*data & 0x8000) >> 15 != parity(*data & 0x7FFF))
+	if ((data & 0x8000) >> 15 != parity(data & 0x7FFF))
 		parityErr = 1;
-	if ((*data & 0x4000) != 0)
+	if ((data & 0x4000) != 0)
 		EFerr = 2;
 
-	*data = *data & 0x3FFF;  // filter bits outside data, strip bit 14..15
+	*data_ = data & 0x3FFF;  // filter bits outside data, strip bit 14..15
 	return parityErr|EFerr;
 }
 

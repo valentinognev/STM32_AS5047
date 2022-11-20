@@ -9,9 +9,9 @@
             "servertype": "openocd",
             "interface": "swd",
             "svdFile": "${workspaceRoot}/STM32F407.svd",
-            "runToEntryPoint": "main",
+            //"runToEntryPoint": "main",
             "configFiles": [
-                "interface/stlink.cfg",
+                "interface/stlink_stm32f4.cfg",
                 "target/stm32f4x.cfg"
             ],
             "preRestartCommands": [

@@ -27,7 +27,7 @@ int64_t getTickMSCounter()
 	return TickMSCounter;
 }
 
-DebugWriteState DebugScopeInsertData(DebugScope_Handle_t *pHandle, const int8_t chid, const float data)
+DebugWriteState DebugScopeInsertData(DebugScope_Handle_t *pHandle, const int8_t chid, const int16_t data)
 {
 	if (!pHandle->startWriteFlag)
 		return START_FLAG_IS_OFF ;

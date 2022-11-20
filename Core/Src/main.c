@@ -136,64 +136,77 @@ int main(void)
   uint16_t nop,AGC;
 
   uint8_t errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_NOP, &nop);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Get_AGC_Value(&AGC);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_PROG, &PROG);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ANGLEUNC, &ANGLEUNC);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_CORDICMAG, &CORDICMAG);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ANGLECOM, &ANGLECOM);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ZPOSM, &ZPOSM);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ZPOSL, &ZPOSL);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_SETTINGS1, &SETTINGS1);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
   errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_SETTINGS2, &SETTINGS2);
+  if (errorFlag != 0)    errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
 
   errorFlag = AS5047D_Get_True_Angle_Value(&true_angle);
-//
-//
-//  AS5047D_Init();
-//  AS5047D_SetZero();
+    //
+    //
+    //  AS5047D_Init();
+    //  AS5047D_SetZero();
 
-  LL_TIM_EnableCounter(TIM9);
-  //HAL_TIM_Base_Start(&htim9);
-  /* USER CODE END 2 */
+    LL_TIM_EnableCounter(TIM9);
+    // HAL_TIM_Base_Start(&htim9);
+    /* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  char buf[10]={"my test"};
-  char inData[10] = "";
-  uint32_t inDataSZ = strlen(inData);
-  while (1)
-  {
-	  while (!timTrig) ;
+    /* Infinite loop */
+    /* USER CODE BEGIN WHILE */
+    char buf[10] = {"my test"};
+    char inData[10] = "";
+    uint32_t inDataSZ = strlen(inData);
+    while (1)
+    {
+      while (!timTrig)
+        ;
 
-	  errorFlag = AS5047D_Get_True_Angle_Value(&spiAngle);
-	  if (errorFlag != 0)
-	  {
-		  errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
-		  errorFlag++;
-	  }
-	  timTrig = 0;
-	  DebugScopeInsertData(&debugData, 1, encoderAngle);
-	  DebugScopeInsertData(&debugData, 2, spiAngle);
+      errorFlag = AS5047D_Get_True_Angle_Value(&spiAngle);
+      if (errorFlag != 0)
+      {
+        errorFlag = AS5047D_Read(AS5047D_CS1_GPIO_Port, AS5047D_CS1_Pin, AS5047D_ERRFL, &ERRFL);
+        errorFlag++;
+      }
+      timTrig = 0;
+      //
+      DebugScopeInsertData(&debugData, 2, (int)(spiAngle*50));
 
-	  //CDC_Transmit_FS(buf, strlen(buf));
-	  if (VCP_retrieveInputData(inData, &inDataSZ))
-		  if (strlen(inData)>0)
-		  {
-			  debugCommand = inData[0];//atoi(buf);
-			  if (debugCommand == START_WRITE)
-				  debugData.startWriteFlag = true;
-			  else if (debugCommand == TRANSMIT_DATA)
-				  CDC_Transmit_FS(debugData.Ch1, sizeof(debugData.Ch1)*2);
-		  }
+      // CDC_Transmit_FS(buf, strlen(buf));
+      if (VCP_retrieveInputData(inData, &inDataSZ))
+        if (strlen(inData) > 0)
+        {
+          debugCommand = inData[0]; // atoi(buf);
+          if (debugCommand == START_WRITE)
+            DebugScopeStartWrite(&debugData);
+          else if (debugCommand == TRANSMIT_DATA)
+            CDC_Transmit_FS((uint8_t*)(debugData.Ch1), sizeof(debugData.Ch1) * 2);
+        }
 
-    /* USER CODE END WHILE */
+      /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+      /* USER CODE BEGIN 3 */
+    }
+    /* USER CODE END 3 */
   }
-  /* USER CODE END 3 */
-}
 
 /**
   * @brief System Clock Configuration
@@ -251,6 +264,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	{
 		HAL_UART_Transmit (&huart2, debugData.Ch1, sizeof (debugData.Ch1)*2, 10);
 	}
+}
+void tim9eventFunction()
+{
+  DebugScopeInsertData(&debugData, 1, encoderAngle);
 }
 /* USER CODE END 4 */
 

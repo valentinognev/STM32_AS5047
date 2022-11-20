@@ -83,16 +83,16 @@ typedef struct
   const int16_t sz;
 	int8_t curCh;
 	int16_t i1, i2, i3, i4, i5;
-    float Ch1[DEBUGSCOPESIZE];
-    float Ch2[DEBUGSCOPESIZE];
-    float Ch3[DEBUGSCOPESIZE];
-    float Ch4[1];
-    float Ch5[1];
+  int16_t Ch1[DEBUGSCOPESIZE];
+  int16_t Ch2[DEBUGSCOPESIZE];
+  int16_t Ch3[DEBUGSCOPESIZE];
+  int16_t Ch4[1];
+  int16_t Ch5[1];
   uint8_t startWriteFlag;
 } DebugScope_Handle_t;
 
 int64_t getTickMSCounter();
-DebugWriteState DebugScopeInsertData(DebugScope_Handle_t *pHandle, const int8_t chid, const float data);
+DebugWriteState DebugScopeInsertData(DebugScope_Handle_t *pHandle, const int8_t chid, const int16_t data);
 void DebugScopeStartWrite(DebugScope_Handle_t *pHandle);
 
 #ifdef __cplusplus

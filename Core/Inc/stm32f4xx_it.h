@@ -67,6 +67,7 @@ void OTG_FS_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 void DMA1_Stream0_TransferComplete(void);
 void DMA1_Stream5_TransferComplete(void);
+void tim9eventFunction();
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

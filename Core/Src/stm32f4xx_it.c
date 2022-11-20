@@ -279,13 +279,13 @@ void TIM1_BRK_TIM9_IRQHandler(void)
   /* USER CODE BEGIN TIM1_BRK_TIM9_IRQn 0 */
   if (LL_TIM_IsEnabledIT_UPDATE (TIM9) != 0U)
   {
-	if (LL_TIM_IsActiveFlag_UPDATE (TIM9) != 0U)
-	{
-	  LL_TIM_ClearFlag_UPDATE(TIM9);
-	  encoderAngle = LL_TIM_GetCounter(TIM4);
-	  timTrig = 1;
-
-	}
+    if (LL_TIM_IsActiveFlag_UPDATE (TIM9) != 0U)
+    {
+      LL_TIM_ClearFlag_UPDATE(TIM9);
+      encoderAngle = LL_TIM_GetCounter(TIM4);
+      tim9eventFunction();
+      timTrig = 1;
+    }
   }
   /* USER CODE END TIM1_BRK_TIM9_IRQn 0 */
 
